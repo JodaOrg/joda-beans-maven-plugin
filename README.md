@@ -1,4 +1,5 @@
-maven-joda-beans-plugin
-=======================
+Joda-Beans plugin for Maven
+===========================
 
-Maven plugin for Joda-Beans
+This project provides a [Maven](https://maven.apache.org/) plugin
+for [Joda-Beans](https://github.com/JodaOrg/joda-beans).
