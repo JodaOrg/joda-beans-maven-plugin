@@ -34,15 +34,15 @@ import org.joda.beans.gen.BeanCodeGen;
 public class JodaBeansGenerateMojo extends AbstractMojo {
 
     /**
-     * @parameter alias="indent"
+     * @parameter alias="indent" expression="${joda.beans.indent}"
      */
     private String indent;
     /**
-     * @parameter alias="prefix"
+     * @parameter alias="prefix" expression="${joda.beans.prefix}"
      */
     private String prefix;
     /**
-     * @parameter alias="verbose"
+     * @parameter alias="verbose" expression="${joda.beans.verbose}"
      */
     private Integer verbose;
     /**
@@ -51,18 +51,6 @@ public class JodaBeansGenerateMojo extends AbstractMojo {
      * @readonly
      */
     private String sourceDir;
-//    /**
-//     * @parameter expression="${descriptor}"
-//     * @required
-//     * @readonly
-//     */
-//    private PluginDescriptor descriptor;
-//    /**
-//     * @parameter expression="${project}"
-//     * @required
-//     * @readonly
-//     */
-//    private MavenProject project;
 
     /**
      * Executes the Joda-Beans generator.
@@ -71,6 +59,8 @@ public class JodaBeansGenerateMojo extends AbstractMojo {
         if (sourceDir == null) {
             throw new MojoExecutionException("Source directory must not be null");
         }
+        
+        // build args
         List<String> argsList = new ArrayList<String>();
         argsList.add("-R");
         if (indent != null) {
@@ -84,6 +74,7 @@ public class JodaBeansGenerateMojo extends AbstractMojo {
         }
         argsList.add(sourceDir);
         
+        // run generator
         getLog().info("Joda-Bean generator started, directory: " + sourceDir);
         BeanCodeGen gen = null;
         try {

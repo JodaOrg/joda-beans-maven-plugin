@@ -34,35 +34,27 @@ import org.joda.beans.gen.BeanCodeGen;
 public class JodaBeansValidateMojo extends AbstractMojo {
 
     /**
-     * @parameter alias="indent"
+     * @parameter alias="indent" expression="${joda.beans.indent}"
      */
     private String indent;
     /**
-     * @parameter alias="prefix"
+     * @parameter alias="prefix" expression="${joda.beans.prefix}"
      */
     private String prefix;
     /**
-     * @parameter alias="verbose"
+     * @parameter alias="verbose" expression="${joda.beans.verbose}"
      */
     private Integer verbose;
+    /**
+     * @parameter alias="stopOnError" expression="${joda.beans.stopOnError}"
+     */
+    private boolean stopOnError = true;
     /**
      * @parameter expression="${project.build.sourceDirectory}"
      * @required
      * @readonly
      */
     private String sourceDir;
-//    /**
-//     * @parameter expression="${descriptor}"
-//     * @required
-//     * @readonly
-//     */
-//    private PluginDescriptor descriptor;
-//    /**
-//     * @parameter expression="${project}"
-//     * @required
-//     * @readonly
-//     */
-//    private MavenProject project;
 
     /**
      * Executes the Joda-Beans generator, validating that there are no changes.
@@ -71,6 +63,8 @@ public class JodaBeansValidateMojo extends AbstractMojo {
         if (sourceDir == null) {
             throw new MojoExecutionException("Source directory must not be null");
         }
+        
+        // build args
         List<String> argsList = new ArrayList<String>();
         argsList.add("-R");
         if (indent != null) {
@@ -82,8 +76,10 @@ public class JodaBeansValidateMojo extends AbstractMojo {
         if (verbose != null) {
             argsList.add("-verbose=" + verbose);
         }
+        argsList.add("-nowrite");
         argsList.add(sourceDir);
         
+        // run generator without writing
         getLog().info("Joda-Bean validator started, directory: " + sourceDir);
         BeanCodeGen gen = null;
         try {
@@ -99,9 +95,13 @@ public class JodaBeansValidateMojo extends AbstractMojo {
             throw new MojoFailureException("Error while running Joda-Beans generator: " + ex.getMessage(), ex);
         }
         if (changes > 0) {
-            throw new MojoFailureException("Some Joda-Beans need to be re-generated (" + changes + " files)");
+            if (stopOnError) {
+                throw new MojoFailureException("Some Joda-Beans need to be re-generated (" + changes + " files)");
+            }
+            getLog().info("*** Joda-Bean validator found " + changes + " beans in need of generation ***");
+        } else {
+            getLog().info("Joda-Bean validator completed");
         }
-        getLog().info("Joda-Bean validator completed");
     }
 
 }
