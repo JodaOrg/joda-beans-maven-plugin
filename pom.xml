@@ -8,7 +8,7 @@
   <artifactId>maven-joda-beans-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Joda Beans Maven plugin</name>
-  <version>0.5-SNAPSHOT</version>
+  <version>0.7</version>
   <description>Maven plugin for Joda-Beans</description>
   <url>https://github.com/JodaOrg/maven-joda-beans-plugin</url>
   <issueManagement>
@@ -146,7 +146,8 @@
     <dependency>
       <groupId>org.joda</groupId>
       <artifactId>joda-beans</artifactId>
-      <version>0.6.3</version>
+      <version>0.7</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
