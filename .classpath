@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry combineaccessrules="false" kind="src" path="/joda-beans"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-plugin-api/3.0.4/maven-plugin-api-3.0.4.jar" sourcepath="/M2_REPO/org/apache/maven/maven-plugin-api/3.0.4/maven-plugin-api-3.0.4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-project/2.2.1/maven-project-2.2.1.jar" sourcepath="/M2_REPO/org/apache/maven/maven-project/2.2.1/maven-project-2.2.1-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-model/3.0.4/maven-model-3.0.4.jar" sourcepath="/M2_REPO/org/apache/maven/maven-model/3.0.4/maven-model-3.0.4-sources.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/joda/joda-beans/0.6.3/joda-beans-0.6.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/joda/joda-beans/0.7/joda-beans-0.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
