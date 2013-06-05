@@ -1,5 +1,8 @@
 *.class
 *.log
+.checkstyle
+.classpath
+.project
 /bin/
 /build/
 /target/
