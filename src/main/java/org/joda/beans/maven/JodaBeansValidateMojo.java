@@ -27,7 +27,7 @@ import org.joda.beans.gen.BeanCodeGen;
  * Maven plugin for validating that the generated Joda-Beans are up to date.
  * 
  * @goal validate
- * @phase validate
+ * @phase process-sources
  * 
  * @author Stephen Colebourne
  */

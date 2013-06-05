@@ -27,7 +27,7 @@ import org.joda.beans.gen.BeanCodeGen;
  * Maven plugin for running Joda-Beans.
  * 
  * @goal generate
- * @phase generate-sources
+ * @phase process-sources
  * 
  * @author Stephen Colebourne
  */
