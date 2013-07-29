@@ -21,8 +21,9 @@ either the word "tab", or a number, such as "2" or "4". Default is "4". Property
 - `prefix` - as per the command line, the prefix used by fields. Default is "". Property is `${joda.beans.prefix}`.
 - `verbose` - as per the command line, a number from "0" (quiet) to "3" (verbose). Property is `${joda.beans.verbose}`.
 - `stopOnError` - whether the build should continue when an error is found. Default is "true". Property is `${joda.beans.stopOnError}`.
+- `skip` - skips the plugin
 
-The goal is bound to the `process-sources` phase of the lifecycle.
+The goal is bound to the `process-sources` phase of the lifecycle by default.
 
 
 #### Generate
@@ -35,8 +36,9 @@ This goal has the following optional configuration items:
 either the word "tab", or a number, such as "2" or "4". Default is "4". Property is `${joda.beans.indent}`.
 - `prefix` - as per the command line, the prefix used by fields. Default is "". Property is `${joda.beans.prefix}`.
 - `verbose` - as per the command line, a number from "0" (quiet) to "3" (verbose). Property is `${joda.beans.verbose}`.
+- `skip` - skips the plugin
 
-The goal is bound to the `process-sources` phase of the lifecycle.
+The goal is bound to the `process-sources` phase of the lifecycle by default.
 
 
 ### Setting up the pom
@@ -131,32 +133,7 @@ To generate the sources as part of the build, rather than validating them, use t
 
 #### Joda-Beans version
 
-Version 0.7.1 of the plugin hard codes a link to version 0.7 of Joda-Beans.
-This can be overridden in the standard way using a `<dependencies>` block:
+Version 0.7.2 of the plugin generates code using the Joda-Beans version
+in the project classpath. If the project does not have the dependency
+available then generation is skipped.
 
-```
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.joda</groupId>
-        <artifactId>maven-joda-beans-plugin</artifactId>
-        <version>0.7.1</version>
-        <executions>
-          <execution>
-            <id>joda-beans-generate</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.joda</groupId>
-            <artifactId>joda-beans</artifactId>
-            <version>0.8-FUTURE_VERSION</version>  <!-- Override Joda-Beans version -->
-          </dependency>
-        </dependencies>
-      </plugin>
-    </plugins>
-  </build>
-```
