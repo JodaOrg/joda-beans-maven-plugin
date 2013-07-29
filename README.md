@@ -57,7 +57,7 @@ One way to achieve this is using `<pluginManagement>`:
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>maven-joda-beans-plugin</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2</version>
       </plugin>
     </pluginManagement>
   </build>
@@ -95,7 +95,7 @@ If they are not, the user would be expected to run `mvn joda-beans:generate` fro
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>maven-joda-beans-plugin</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2</version>
         <executions>
           <execution>
             <id>joda-beans-validate</id>
@@ -117,7 +117,7 @@ To generate the sources as part of the build, rather than validating them, use t
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>maven-joda-beans-plugin</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2</version>
         <executions>
           <execution>
             <id>joda-beans-generate</id>
