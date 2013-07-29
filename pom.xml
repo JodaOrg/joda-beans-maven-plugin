@@ -5,15 +5,15 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.joda</groupId>
-  <artifactId>maven-joda-beans-plugin</artifactId>
+  <artifactId>joda-beans-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Joda Beans Maven plugin</name>
   <version>0.7.2-SNAPSHOT</version>
   <description>Maven plugin for Joda-Beans</description>
-  <url>https://github.com/JodaOrg/maven-joda-beans-plugin</url>
+  <url>https://github.com/JodaOrg/joda-beans-maven-plugin</url>
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/JodaOrg/maven-joda-beans-plugin/issues</url>
+    <url>https://github.com/JodaOrg/joda-beans-maven-plugin/issues</url>
   </issueManagement>
   <inceptionYear>2013</inceptionYear>
   <mailingLists>
@@ -43,9 +43,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:JodaOrg/maven-joda-beans-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:JodaOrg/maven-joda-beans-plugin.git</developerConnection>
-    <url>https://github.com/JodaOrg/maven-joda-beans-plugin</url>
+    <connection>scm:git:git@github.com:JodaOrg/joda-beans-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:JodaOrg/joda-beans-maven-plugin.git</developerConnection>
+    <url>https://github.com/JodaOrg/joda-beans-maven-plugin</url>
   </scm>
   <organization>
     <name>Joda.org</name>
