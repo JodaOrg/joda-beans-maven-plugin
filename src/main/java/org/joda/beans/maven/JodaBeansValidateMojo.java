@@ -28,34 +28,33 @@ import org.joda.beans.gen.BeanCodeGen;
  * 
  * @goal validate
  * @phase process-sources
- * 
- * @author Stephen Colebourne
  */
 public class JodaBeansValidateMojo extends AbstractMojo {
 
     /**
-     * @parameter alias="indent" expression="${joda.beans.indent}"
+     * @parameter alias="indent" property="joda.beans.indent"
      */
     private String indent;
     /**
-     * @parameter alias="prefix" expression="${joda.beans.prefix}"
+     * @parameter alias="prefix" property="joda.beans.prefix"
      */
     private String prefix;
     /**
-     * @parameter alias="verbose" expression="${joda.beans.verbose}"
+     * @parameter alias="verbose" property="joda.beans.verbose"
      */
     private Integer verbose;
     /**
-     * @parameter alias="stopOnError" expression="${joda.beans.stopOnError}"
+     * @parameter alias="stopOnError" property="joda.beans.stopOnError"
      */
     private boolean stopOnError = true;
     /**
-     * @parameter expression="${project.build.sourceDirectory}"
+     * @parameter property="project.build.sourceDirectory"
      * @required
      * @readonly
      */
     private String sourceDir;
 
+    //-----------------------------------------------------------------------
     /**
      * Executes the Joda-Beans generator, validating that there are no changes.
      */

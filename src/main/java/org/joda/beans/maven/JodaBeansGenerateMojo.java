@@ -28,30 +28,29 @@ import org.joda.beans.gen.BeanCodeGen;
  * 
  * @goal generate
  * @phase process-sources
- * 
- * @author Stephen Colebourne
  */
 public class JodaBeansGenerateMojo extends AbstractMojo {
 
     /**
-     * @parameter alias="indent" expression="${joda.beans.indent}"
+     * @parameter alias="indent" property="joda.beans.indent"
      */
     private String indent;
     /**
-     * @parameter alias="prefix" expression="${joda.beans.prefix}"
+     * @parameter alias="prefix" property="joda.beans.prefix"
      */
     private String prefix;
     /**
-     * @parameter alias="verbose" expression="${joda.beans.verbose}"
+     * @parameter alias="verbose" property="joda.beans.verbose"
      */
     private Integer verbose;
     /**
-     * @parameter expression="${project.build.sourceDirectory}"
+     * @parameter property="project.build.sourceDirectory"
      * @required
      * @readonly
      */
     private String sourceDir;
 
+    //-----------------------------------------------------------------------
     /**
      * Executes the Joda-Beans generator.
      */
