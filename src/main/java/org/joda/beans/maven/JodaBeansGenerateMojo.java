@@ -32,7 +32,8 @@ public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
     //-----------------------------------------------------------------------
     @Override
     protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        getLog().info("Joda-Bean generator started, directory: " + getSourceDir());
+        getLog().info("Joda-Bean generator started, directory: " + getSourceDir() +
+                        (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
         int changes = super.runTool(toolClass, argsList);
         getLog().info("Joda-Bean generator completed, " + changes + " changed files");
         return changes;

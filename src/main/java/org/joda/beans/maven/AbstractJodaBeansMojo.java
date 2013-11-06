@@ -43,11 +43,17 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     private boolean _skip;
     /**
-     * @parameter property="project.build.sourceDirectory"
+     * @parameter default-value="${project.build.sourceDirectory}" property="joda.beans.source.dir"
      * @required
      * @readonly
      */
     private String sourceDir;
+    /**
+     * @parameter default-value="${project.build.testSourceDirectory}" property="joda.beans.test.source.dir"
+     * @required
+     * @readonly
+     */
+    private String testSourceDir;
     /**
      * @parameter alias="indent" property="joda.beans.indent"
      */
@@ -75,7 +81,16 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @return the source directory, not null
      */
     protected String getSourceDir() {
-        return sourceDir;
+        return (sourceDir == null ? "" : sourceDir.trim());
+    }
+
+    /**
+     * Gets the test source directory.
+     * 
+     * @return the test source directory, not null
+     */
+    protected String getTestSourceDir() {
+        return (testSourceDir == null ? "" : testSourceDir.trim());
     }
 
     //-----------------------------------------------------------------------
@@ -86,8 +101,8 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         if (_skip) {
             return;
         }
-        if (sourceDir == null) {
-            throw new MojoExecutionException("Source directory must not be null");
+        if (getSourceDir().length() == 0) {
+            throw new MojoExecutionException("Source directory must be specified");
         }
         ClassLoader classLoader = obtainClassLoader();
         Class<?> toolClass = null;
@@ -131,26 +146,48 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @throws MojoFailureException if a failure occurs
      */
     protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        // add source directory
-        argsList.add(sourceDir);
-        // find methods
+        // invoke main source
+        argsList.add(getSourceDir());
+        int count = invoke(toolClass, argsList);
+        // optionally invoke test source
+        if (getTestSourceDir().length() > 0) {
+            argsList.set(argsList.size() - 1, getTestSourceDir());
+            count += invoke(toolClass, argsList);
+        }
+        return count;
+    }
+
+    private int invoke(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
+        Method createFromArgsMethod = findCreateFromArgsMethod(toolClass);
+        Method processMethod = findProcessMethod(toolClass);
+        Object beanCodeGen = createBuilder(argsList, createFromArgsMethod);
+        return invokeBuilder(processMethod, beanCodeGen);
+    }
+
+    private Method findCreateFromArgsMethod(Class<?> toolClass) throws MojoExecutionException {
         Method createFromArgsMethod = null;
         try {
             createFromArgsMethod = toolClass.getMethod("createFromArgs", String[].class);
         } catch (Exception ex) {
           throw new MojoExecutionException("Unable to find method BeanCodeGen.createFromArgs()");
         }
+        return createFromArgsMethod;
+    }
+
+    private Method findProcessMethod(Class<?> toolClass) throws MojoExecutionException {
         Method processMethod = null;
         try {
             processMethod = toolClass.getMethod("process");
         } catch (Exception ex) {
           throw new MojoExecutionException("Unable to find method BeanCodeGen.process()");
         }
-        // invoke
-        Object beanCodeGen;
+        return processMethod;
+    }
+
+    private Object createBuilder(List<String> argsList, Method createFromArgsMethod) throws MojoExecutionException, MojoFailureException {
         String[] args = argsList.toArray(new String[argsList.size()]);
         try {
-            beanCodeGen = createFromArgsMethod.invoke(null, new Object[] {args});
+            return createFromArgsMethod.invoke(null, new Object[] { args });
         } catch (IllegalArgumentException ex) {
             throw new MojoExecutionException("Error invoking BeanCodeGen.createFromArgs()");
         } catch (IllegalAccessException ex) {
@@ -158,9 +195,11 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         } catch (InvocationTargetException ex) {
             throw new MojoFailureException("Invalid Joda-Beans Mojo configuration: " + ex.getCause().getMessage(), ex.getCause());
         }
-        int changes = 0;
+    }
+
+    private int invokeBuilder(Method processMethod, Object beanCodeGen) throws MojoExecutionException, MojoFailureException {
         try {
-            changes = (Integer) processMethod.invoke(beanCodeGen);
+            return (Integer) processMethod.invoke(beanCodeGen);
         } catch (IllegalArgumentException ex) {
             throw new MojoExecutionException("Error invoking BeanCodeGen.process()");
         } catch (IllegalAccessException ex) {
@@ -168,7 +207,6 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         } catch (InvocationTargetException ex) {
             throw new MojoFailureException("Error while running Joda-Beans tool: " + ex.getCause().getMessage(), ex.getCause());
         }
-        return changes;
     }
 
     /**
@@ -176,7 +214,7 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * 
      * @return the classloader, not null
      */
-    protected URLClassLoader obtainClassLoader() throws MojoExecutionException {
+    private URLClassLoader obtainClassLoader() throws MojoExecutionException {
       List<String> compileClasspath = obtainClasspath();
       Set<URL> classpathUrlSet = new HashSet<URL>();
       for (String classpathEntry : compileClasspath) {
@@ -200,7 +238,7 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @throws MojoExecutionException
      */
     @SuppressWarnings("unchecked")
-    protected List<String> obtainClasspath() throws MojoExecutionException {
+    private List<String> obtainClasspath() throws MojoExecutionException {
       try {
         return _project.getCompileClasspathElements();
       } catch (DependencyResolutionRequiredException ex) {

@@ -44,7 +44,8 @@ public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
 
     @Override
     protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        getLog().info("Joda-Bean validator started, directory: " + getSourceDir());
+        getLog().info("Joda-Bean validator started, directory: " + getSourceDir() +
+                        (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
         int changes = super.runTool(toolClass, argsList);
         if (changes > 0) {
             if (stopOnError) {
