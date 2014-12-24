@@ -8,7 +8,7 @@
   <groupId>org.joda</groupId>
   <artifactId>joda-beans-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <name>Joda Beans Maven plugin</name>
+  <name>Joda-Beans Maven plugin</name>
   <version>1.0-SNAPSHOT</version>
   <description>Maven plugin for Joda-Beans</description>
   <url>https://github.com/JodaOrg/joda-beans-maven-plugin</url>
@@ -40,7 +40,7 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:JodaOrg/joda-beans-maven-plugin.git</connection>
+    <connection>scm:git:https://github.com/JodaOrg/joda-beans-maven-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:JodaOrg/joda-beans-maven-plugin.git</developerConnection>
     <url>https://github.com/JodaOrg/joda-beans-maven-plugin</url>
   </scm>
@@ -219,30 +219,29 @@
           <artifactId>maven-toolchains-plugin</artifactId>
           <version>${maven-toolchains-plugin.version}</version>
         </plugin>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
-         <groupId>org.eclipse.m2e</groupId>
-         <artifactId>lifecycle-mapping</artifactId>
-         <version>1.0.0</version>
-         <configuration>
-          <lifecycleMappingMetadata>
-           <pluginExecutions>
-            <pluginExecution>
-             <pluginExecutionFilter>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-plugin-plugin</artifactId>
-              <versionRange>[3.2,)</versionRange>
-              <goals>
-               <goal>descriptor</goal>
-              </goals>
-             </pluginExecutionFilter>
-             <action>
-              <ignore></ignore>
-             </action>
-            </pluginExecution>
-           </pluginExecutions>
-          </lifecycleMappingMetadata>
-         </configuration>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <versionRange>[3.2,)</versionRange>
+                    <goals>
+                      <goal>descriptor</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -309,6 +308,15 @@
   <!-- ==================================================================== -->
   <profiles>
     <profile>
+      <id>java8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <properties>
+        <additionalparam>-Xdoclint:none</additionalparam>
+      </properties>
+    </profile>
+    <profile>
       <id>repo-sign-artifacts</id>
       <activation>
         <property>
@@ -353,6 +361,9 @@
           </plugin>
         </plugins>
       </build>
+      <properties>
+        <additionalparam></additionalparam>
+      </properties>
     </profile>
   </profiles>
 
