@@ -220,8 +220,9 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         Set<URL> classpathUrlSet = new HashSet<URL>();
         for (String classpathEntry : compileClasspath) {
             File f = new File(classpathEntry);
-            if (f.exists()) {
+            if (f.exists() && f.getPath().contains("joda")) {
                 try {
+                    getLog().debug("Found classpath: " + f);
                     classpathUrlSet.add(f.toURI().toURL());
                 } catch (MalformedURLException ex) {
                     throw new RuntimeException("Error interpreting classpath entry as URL: " + classpathEntry, ex);
