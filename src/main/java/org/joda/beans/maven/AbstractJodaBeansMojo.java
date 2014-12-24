@@ -109,8 +109,8 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         try {
             toolClass = classLoader.loadClass("org.joda.beans.gen.BeanCodeGen");
         } catch (Exception ex) {
-          getLog().info("Skipping as joda-beans is not in the project compile classpath");
-          return;
+            getLog().info("Skipping as joda-beans is not in the project compile classpath");
+            return;
         }
         List<String> argsList = buildArgs();
         runTool(toolClass, argsList);
@@ -169,7 +169,7 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         try {
             createFromArgsMethod = toolClass.getMethod("createFromArgs", String[].class);
         } catch (Exception ex) {
-          throw new MojoExecutionException("Unable to find method BeanCodeGen.createFromArgs()");
+            throw new MojoExecutionException("Unable to find method BeanCodeGen.createFromArgs()");
         }
         return createFromArgsMethod;
     }
@@ -179,7 +179,7 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         try {
             processMethod = toolClass.getMethod("process");
         } catch (Exception ex) {
-          throw new MojoExecutionException("Unable to find method BeanCodeGen.process()");
+            throw new MojoExecutionException("Unable to find method BeanCodeGen.process()");
         }
         return processMethod;
     }
@@ -215,20 +215,21 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @return the classloader, not null
      */
     private URLClassLoader obtainClassLoader() throws MojoExecutionException {
-      List<String> compileClasspath = obtainClasspath();
-      Set<URL> classpathUrlSet = new HashSet<URL>();
-      for (String classpathEntry : compileClasspath) {
-        File f = new File(classpathEntry);
-        if (f.exists()) {
-          try {
-            classpathUrlSet.add(f.toURI().toURL());
-          } catch (MalformedURLException ex) {
-            throw new RuntimeException("Error interpreting classpath entry as URL: " + classpathEntry, ex);
-          }
+        getLog().debug("Finding joda-beans in classpath");
+        List<String> compileClasspath = obtainClasspath();
+        Set<URL> classpathUrlSet = new HashSet<URL>();
+        for (String classpathEntry : compileClasspath) {
+            File f = new File(classpathEntry);
+            if (f.exists()) {
+                try {
+                    classpathUrlSet.add(f.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                    throw new RuntimeException("Error interpreting classpath entry as URL: " + classpathEntry, ex);
+                }
+            }
         }
-      }
-      URL[] classpathUrls = classpathUrlSet.toArray(new URL[classpathUrlSet.size()]);
-      return new URLClassLoader(classpathUrls, AbstractJodaBeansMojo.class.getClassLoader());
+        URL[] classpathUrls = classpathUrlSet.toArray(new URL[classpathUrlSet.size()]);
+        return new URLClassLoader(classpathUrls, AbstractJodaBeansMojo.class.getClassLoader());
     }
 
     /**
@@ -239,11 +240,11 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     @SuppressWarnings("unchecked")
     private List<String> obtainClasspath() throws MojoExecutionException {
-      try {
-        return _project.getCompileClasspathElements();
-      } catch (DependencyResolutionRequiredException ex) {
-        throw new MojoExecutionException("Error obtaining dependencies", ex);
-      }
+        try {
+            return _project.getCompileClasspathElements();
+        } catch (DependencyResolutionRequiredException ex) {
+            throw new MojoExecutionException("Error obtaining dependencies", ex);
+        }
     }
 
 }
