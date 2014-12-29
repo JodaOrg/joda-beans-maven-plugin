@@ -181,7 +181,6 @@ This has been tested using Joda-Beans v1.5, Maven plugin v1.0 and Eclipse Luna v
 
 #### Joda-Beans version
 
-Version 0.7.3 of the plugin generates code using the Joda-Beans version
-in the project classpath. If the project does not have the dependency
-available then generation is skipped.
+Version 0.7.3 and beyond of the plugin generates code using the Joda-Beans version in the project classpath.
+If the project does not have the dependency available then generation is skipped.
 
