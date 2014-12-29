@@ -285,6 +285,16 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+     <groupId>org.sonatype.plexus</groupId>
+     <artifactId>plexus-build-api</artifactId>
+     <version>0.0.7</version>
+   </dependency>
+   <dependency>
+     <groupId>org.testng</groupId>
+     <artifactId>testng</artifactId>
+     <version>6.8.8</version>
+   </dependency>
   </dependencies>
 
   <!-- ==================================================================== -->

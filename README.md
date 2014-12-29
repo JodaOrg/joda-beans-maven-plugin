@@ -132,6 +132,53 @@ To generate the sources as part of the build, rather than validating them, use t
   </build>
 ```
 
+#### Running with Eclipse and M2E
+
+Joda-Beans can be used within Eclipse using Maven and M2E.
+Version 1.0 of this plugin contains an additional XML configuration file for the M2E plugin.
+This avoids the need for an additional M2E connector.
+
+To get an even better integration, use Joda-Beans v1.5 or later and add the following to your project pom:
+
+```
+  <profiles>
+    <profile>
+      <id>joda-beans-eclipse</id>
+      <activation>
+        <property>
+          <name>eclipse.buildId</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.joda</groupId>
+            <artifactId>joda-beans-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>generate</goal>
+                </goals>
+                <configuration>
+                  <eclipse>true</eclipse>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+```
+
+This profile only activates when running in Eclipse IDE.
+It causes the `generate` goal to be executed using the special "eclipse=true" mode.
+This mode means that when a bean is edited, the Joda-Beans source generator is triggered,
+and the file recompiled. Note that the process takes a few seconds and a couple of refreshes.
+This has been tested using Joda-Beans v1.5, Maven plugin v1.0 and Eclipse Luna v4.1.1.
+
+
 #### Joda-Beans version
 
 Version 0.7.3 of the plugin generates code using the Joda-Beans version

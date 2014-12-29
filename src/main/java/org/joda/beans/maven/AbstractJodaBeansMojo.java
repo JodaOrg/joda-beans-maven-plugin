@@ -16,26 +16,41 @@
 package org.joda.beans.maven;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Abstract Joda-Beans Mojo.
  */
 public class AbstractJodaBeansMojo extends AbstractMojo {
+
+    /**
+     * Key for clearing messages.
+     */
+    private static final String JODA_BEANS_MESSAGE_FILE = "joda-beans.message.file";
+    /**
+     * Key for clearing messages.
+     */
+    static final Pattern MESSAGE_PATTERN =
+            Pattern.compile("Error in bean[:] (.*?)[,] Line[:] ([0-9]+)[,] Message[:] (.*)");
 
     /**
      * Skips the mojo.
@@ -49,11 +64,23 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     private String sourceDir;
     /**
+     * @parameter default-value="${project.build.outputDirectory}" property="joda.beans.classes.dir"
+     * @required
+     * @readonly
+     */
+    private String classesDir;
+    /**
      * @parameter default-value="${project.build.testSourceDirectory}" property="joda.beans.test.source.dir"
      * @required
      * @readonly
      */
     private String testSourceDir;
+    /**
+     * @parameter default-value="${project.build.testOutputDirectory}" property="joda.beans.test.classes.dir"
+     * @required
+     * @readonly
+     */
+    private String testClassesDir;
     /**
      * @parameter alias="indent" property="joda.beans.indent"
      */
@@ -67,12 +94,21 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     private Integer verbose;
     /**
+     * @parameter alias="eclipse" property="joda.beans.eclipse"
+     */
+    private boolean eclipse;
+    /**
      * The Maven project.
      * @parameter default-value="${project}"
      * @required
      * @readonly
      */
     private MavenProject _project;
+    /**
+     * Better support for IDEs.
+     * @component
+     */
+    private BuildContext buildContext;
 
     //-----------------------------------------------------------------------
     /**
@@ -85,12 +121,30 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
     }
 
     /**
+     * Gets the classes directory.
+     * 
+     * @return the classes directory, not null
+     */
+    protected String getClassesDir() {
+        return (classesDir == null ? "" : classesDir.trim());
+    }
+
+    /**
      * Gets the test source directory.
      * 
      * @return the test source directory, not null
      */
     protected String getTestSourceDir() {
         return (testSourceDir == null ? "" : testSourceDir.trim());
+    }
+
+    /**
+     * Gets the test classes directory.
+     * 
+     * @return the test classes directory, not null
+     */
+    protected String getTestClassesDir() {
+        return (testClassesDir == null ? "" : testClassesDir.trim());
     }
 
     //-----------------------------------------------------------------------
@@ -146,22 +200,74 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @throws MojoFailureException if a failure occurs
      */
     protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
+        // cleanup from last run
+        File errorFile = (File) buildContext.getValue(JODA_BEANS_MESSAGE_FILE);
+        if (errorFile != null) {
+            buildContext.removeMessages(errorFile);
+        }
         // invoke main source
         argsList.add(getSourceDir());
-        int count = invoke(toolClass, argsList);
+        int changedFileCount = runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
         // optionally invoke test source
         if (getTestSourceDir().length() > 0) {
             argsList.set(argsList.size() - 1, getTestSourceDir());
-            count += invoke(toolClass, argsList);
+            changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getTestSourceDir()), new File(getTestClassesDir()));
         }
-        return count;
+        return changedFileCount;
     }
 
-    private int invoke(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
+    private int runToolHandleChanges(Class<?> toolClass, List<String> argsList, File baseDir, File classesDir)
+            throws MojoExecutionException, MojoFailureException {
+        try {
+            String baseStr = baseDir.getCanonicalPath();
+            List<File> changedFiles = invoke(toolClass, argsList);
+            // mark each file as being in need of a refresh
+            if (changedFiles.size() > 0) {
+                if (changedFiles.get(0) == null) {
+                    buildContext.refresh(baseDir);
+                } else {
+                    for (File file : changedFiles) {
+                        getLog().debug("Refreshed: " + file);
+                        buildContext.refresh(file);
+                        // when running in Eclipse (determined by the eclipse flag) apply a hack
+                        // the hack deleted the class file associated with the java file
+                        // this triggers Eclipse to recompile the edited source file
+                        // this provides an Eclipse plugin for Joda-Beans just via m2e mechanisms
+                        if (eclipse) {
+                            String fileStr = file.getCanonicalPath();
+                            if (fileStr.length() > baseStr.length() && fileStr.startsWith(baseStr)) {
+                                String relative = fileStr.substring(baseStr.length());
+                                if (relative.startsWith("/") || relative.startsWith("\\")) {
+                                    relative = relative.substring(1);
+                                }
+                                relative = relative.replace(".java", ".class");
+                                File classFile = new File(classesDir, relative);
+                                if (classFile.delete()) {
+                                    getLog().debug("Deleted: " + classFile);
+                                } else {
+                                    getLog().debug("Failed to delete: " + classFile);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return changedFiles.size();
+        } catch (IOException ex) {
+            throw new MojoExecutionException("IO problem", ex);
+        }
+    }
+
+    private List<File> invoke(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
         Method createFromArgsMethod = findCreateFromArgsMethod(toolClass);
         Method processMethod = findProcessMethod(toolClass);
         Object beanCodeGen = createBuilder(argsList, createFromArgsMethod);
-        return invokeBuilder(processMethod, beanCodeGen);
+        if (processMethod.getReturnType() == Integer.TYPE) {
+            int count = invokeBuilderCountChanges(processMethod, beanCodeGen);
+            return Collections.nCopies(count, null);
+        } else {
+            return invokeBuilderListChanges(processMethod, beanCodeGen);
+        }
     }
 
     private Method findCreateFromArgsMethod(Class<?> toolClass) throws MojoExecutionException {
@@ -177,9 +283,15 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
     private Method findProcessMethod(Class<?> toolClass) throws MojoExecutionException {
         Method processMethod = null;
         try {
-            processMethod = toolClass.getMethod("process");
+            processMethod = toolClass.getMethod("processFiles");
+            getLog().debug("Using Joda-Beans v1.5 or later - processFiles()");
         } catch (Exception ex) {
-            throw new MojoExecutionException("Unable to find method BeanCodeGen.process()");
+            try {
+                processMethod = toolClass.getMethod("process");
+                getLog().debug("Using Joda-Beans v1.4 or earlier - process()");
+            } catch (Exception ex2) {
+                throw new MojoExecutionException("Unable to find method BeanCodeGen.processFiles() or BeanCodeGen.process()");
+            }
         }
         return processMethod;
     }
@@ -197,7 +309,7 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         }
     }
 
-    private int invokeBuilder(Method processMethod, Object beanCodeGen) throws MojoExecutionException, MojoFailureException {
+    private int invokeBuilderCountChanges(Method processMethod, Object beanCodeGen) throws MojoExecutionException, MojoFailureException {
         try {
             return (Integer) processMethod.invoke(beanCodeGen);
         } catch (IllegalArgumentException ex) {
@@ -205,8 +317,62 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         } catch (IllegalAccessException ex) {
             throw new MojoExecutionException("Error invoking BeanCodeGen.process()");
         } catch (InvocationTargetException ex) {
-            throw new MojoFailureException("Error while running Joda-Beans tool: " + ex.getCause().getMessage(), ex.getCause());
+            throw handleFailure(ex);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<File> invokeBuilderListChanges(Method processMethod, Object beanCodeGen) throws MojoExecutionException, MojoFailureException {
+        try {
+            return (List<File>) processMethod.invoke(beanCodeGen);
+        } catch (IllegalArgumentException ex) {
+            throw new MojoExecutionException("Error invoking BeanCodeGen.process()");
+        } catch (IllegalAccessException ex) {
+            throw new MojoExecutionException("Error invoking BeanCodeGen.process()");
+        } catch (InvocationTargetException ex) {
+            throw handleFailure(ex);
+        }
+    }
+
+    private MojoFailureException handleFailure(InvocationTargetException ex) throws MojoFailureException {
+        String msg = ex.getCause().getMessage();
+        File file = new File(getSourceDir());
+        int line = 1;
+        try {
+            if (msg.startsWith("Error in bean: ")) {
+                Matcher matcher = MESSAGE_PATTERN.matcher(msg);
+                if (matcher.matches()) {
+                    // Joda-Beans v1.5 messages
+                    file = new File(matcher.group(1));
+                    line = Integer.parseInt(matcher.group(2));
+                    msg = matcher.group(3);
+                } else {
+                    // Joda-Beans v1.4 messages
+                    File sourceFile = new File(msg.substring("Error in bean: ".length()));
+                    if (sourceFile.exists()) {
+                        file = sourceFile;
+                        if (ex.getCause().getCause() != null) {
+                            msg = ex.getCause().getCause().getMessage();
+                            if (ex.getCause().getCause().getCause() != null) {
+                                msg += ": " + ex.getCause().getCause().getCause().getMessage();
+                            }
+                        }
+                    }
+                }
+            } else if (ex.getCause().getCause() != null) {
+                msg += ": " + ex.getCause().getCause().getMessage();
+                if (ex.getCause().getCause().getCause() != null) {
+                    msg += ": " + ex.getCause().getCause().getCause().getMessage();
+                }
+            }
+        } catch (Exception unexpected) {
+            // ignore and use standard messages
+        }
+        buildContext.setValue(JODA_BEANS_MESSAGE_FILE, file);
+        buildContext.addMessage(
+                        file.getAbsoluteFile(), line + 1, 1,
+                        msg, BuildContext.SEVERITY_ERROR, ex.getCause());
+        return new MojoFailureException("Error while running Joda-Beans tool: " + msg, ex.getCause());
     }
 
     /**
