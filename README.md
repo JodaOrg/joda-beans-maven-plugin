@@ -57,7 +57,7 @@ One way to achieve this is using `<pluginManagement>`:
         <plugin>
           <groupId>org.joda</groupId>
           <artifactId>joda-beans-maven-plugin</artifactId>
-          <version>0.7.3</version>
+          <version>1.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -96,7 +96,7 @@ If they are not, the user would be expected to run `mvn joda-beans:generate` fro
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>joda-beans-maven-plugin</artifactId>
-        <version>0.7.3</version>
+        <version>1.0</version>
         <executions>
           <execution>
             <id>joda-beans-validate</id>
@@ -118,7 +118,7 @@ To generate the sources as part of the build, rather than validating them, use t
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>joda-beans-maven-plugin</artifactId>
-        <version>0.7.3</version>
+        <version>1.0</version>
         <executions>
           <execution>
             <id>joda-beans-generate</id>
@@ -175,7 +175,7 @@ To get an even better integration, use Joda-Beans v1.5 or later and add the foll
 This profile only activates when running in Eclipse IDE.
 It causes the `generate` goal to be executed using the special "eclipse=true" mode.
 This mode means that when a bean is edited, the Joda-Beans source generator is triggered,
-and the file recompiled. Note that the process takes a few seconds and a couple of refreshes.
+and the file recompiled. Note that the processing in Eclipse takes a few seconds to refresh properly.
 This has been tested using Joda-Beans v1.5, Maven plugin v1.0 and Eclipse Luna v4.1.1.
 
 
