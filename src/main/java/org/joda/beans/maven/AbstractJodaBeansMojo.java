@@ -255,6 +255,12 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
             return changedFiles.size();
         } catch (IOException ex) {
             throw new MojoExecutionException("IO problem", ex);
+        } catch (MojoFailureException ex) {
+            if (eclipse && buildContext.getValue(JODA_BEANS_MESSAGE_FILE) != null) {
+                return 0;  // avoid showing error in Eclipse pom that is reported in a file
+            } else {
+                throw ex;
+            }
         }
     }
 
