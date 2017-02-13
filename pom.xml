@@ -9,7 +9,7 @@
   <artifactId>joda-beans-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Joda-Beans Maven plugin</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <description>Maven plugin for Joda-Beans</description>
   <url>https://github.com/JodaOrg/joda-beans-maven-plugin</url>
 
