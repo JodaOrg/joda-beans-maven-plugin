@@ -90,6 +90,10 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     private String prefix;
     /**
+     * @parameter alias="config" property="joda.beans.config"
+     */
+    private String config;
+    /**
      * @parameter alias="verbose" property="joda.beans.verbose"
      */
     private Integer verbose;
@@ -183,6 +187,9 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         }
         if (prefix != null) {
             argsList.add("-prefix=" + prefix);
+        }
+        if (config != null) {
+            argsList.add("-config=" + config);
         }
         if (verbose != null) {
             argsList.add("-verbose=" + verbose);
