@@ -154,7 +154,10 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
     //-----------------------------------------------------------------------
     /**
      * Executes the Joda-Beans generator.
+     * @throws MojoExecutionException if an error occurs
+     * @throws MojoFailureException if an error occurs
      */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (_skip) {
             return;
