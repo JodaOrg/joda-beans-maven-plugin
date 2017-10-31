@@ -15,21 +15,25 @@
  */
 package org.joda.beans.maven;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Matcher;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
 
 /**
  * Test.
  */
-@Test
+@RunWith(DataProviderRunner.class)
 public class TestRegexMessageParsing {
 
-    @DataProvider(name = "match")
-    Object[][] data_match() {
+    @DataProvider
+    public static Object[][] dataMatch() {
         return new Object[][] {
             {"Error in bean: E:\\dev\\test\\Test.java, Line: 123, Message: Bad thing happened",
                 "E:\\dev\\test\\Test.java", 123, "Bad thing happened"},
@@ -38,10 +42,11 @@ public class TestRegexMessageParsing {
         };
     }
 
-    @Test(dataProvider = "match")
-    public void test_parse(String input, String file, int line, String msg) {
+    @Test
+    @UseDataProvider("dataMatch")
+    public void testParse(String input, String file, int line, String msg) {
         Matcher matcher = AbstractJodaBeansMojo.MESSAGE_PATTERN.matcher(input);
-        assertEquals(matcher.matches(), true);
+        assertTrue(matcher.matches());
     }
 
 }
