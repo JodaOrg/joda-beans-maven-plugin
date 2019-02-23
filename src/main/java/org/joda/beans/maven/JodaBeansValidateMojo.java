@@ -19,19 +19,23 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * Maven plugin for validating that the generated Joda-Beans are up to date.
- * 
- * @goal validate
- * @phase process-sources
- * @requiresDependencyResolution compile
  */
+@Mojo(name = "validate",
+        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        threadSafe = true)
+@Execute(goal = "validate", phase = LifecyclePhase.PROCESS_SOURCES)
 public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
 
-    /**
-     * @parameter alias="stopOnError" property="joda.beans.stopOnError"
-     */
+    @Parameter(alias = "stopOnError", property = "joda.beans.stopOnError", defaultValue = "true")
     private boolean stopOnError = true;
 
     //-----------------------------------------------------------------------

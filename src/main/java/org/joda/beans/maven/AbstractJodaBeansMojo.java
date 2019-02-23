@@ -34,6 +34,8 @@ import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -52,66 +54,40 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
     static final Pattern MESSAGE_PATTERN =
             Pattern.compile("Error in bean[:] (.*?)[,] Line[:] ([0-9]+)[,] Message[:] (.*)");
 
-    /**
-     * Skips the mojo.
-     * @parameter alias="skip" property="joda.beans.skip"
-     */
-    private boolean _skip;
-    /**
-     * @parameter default-value="${project.build.sourceDirectory}" property="joda.beans.source.dir"
-     * @required
-     * @readonly
-     */
-    private String sourceDir;
-    /**
-     * @parameter default-value="${project.build.outputDirectory}" property="joda.beans.classes.dir"
-     * @required
-     * @readonly
-     */
-    private String classesDir;
-    /**
-     * @parameter default-value="${project.build.testSourceDirectory}" property="joda.beans.test.source.dir"
-     * @required
-     * @readonly
-     */
-    private String testSourceDir;
-    /**
-     * @parameter default-value="${project.build.testOutputDirectory}" property="joda.beans.test.classes.dir"
-     * @required
-     * @readonly
-     */
-    private String testClassesDir;
-    /**
-     * @parameter alias="indent" property="joda.beans.indent"
-     */
+    @Parameter(alias = "skip", property = "joda.beans.skip", defaultValue = "false")
+    private boolean skip;
+
+    @Parameter(alias = "indent", property = "joda.beans.indent")
     private String indent;
-    /**
-     * @parameter alias="prefix" property="joda.beans.prefix"
-     */
+
+    @Parameter(alias = "prefix", property = "joda.beans.prefix")
     private String prefix;
-    /**
-     * @parameter alias="config" property="joda.beans.config"
-     */
+
+    @Parameter(alias = "config", property = "joda.beans.config")
     private String config;
-    /**
-     * @parameter alias="verbose" property="joda.beans.verbose"
-     */
+
+    @Parameter(alias = "verbose", property = "joda.beans.verbose")
     private Integer verbose;
-    /**
-     * @parameter alias="eclipse" property="joda.beans.eclipse"
-     */
+
+    @Parameter(alias = "eclipse", property = "joda.beans.eclipse", defaultValue = "false")
     private boolean eclipse;
-    /**
-     * The Maven project.
-     * @parameter default-value="${project}"
-     * @required
-     * @readonly
-     */
-    private MavenProject _project;
-    /**
-     * Better support for IDEs.
-     * @component
-     */
+
+    @Parameter(alias = "sourceDir", property = "joda.beans.source.dir", defaultValue = "${project.build.sourceDirectory}", required = true)
+    private String sourceDir;
+
+    @Parameter(alias = "classesDir", property = "joda.beans.classes.dir", defaultValue = "${project.build.outputDirectory}", required = true, readonly = true)
+    private String classesDir;
+
+    @Parameter(alias = "testSourceDir", property = "joda.beans.test.source.dir", defaultValue = "${project.build.testSourceDirectory}", required = true, readonly = true)
+    private String testSourceDir;
+
+    @Parameter(alias = "testClassesDir", property = "joda.beans.test.classes.dir", defaultValue = "${project.build.testOutputDirectory}", required = true, readonly = true)
+    private String testClassesDir;
+
+    @Parameter(alias = "project", defaultValue = "${project}", required = true, readonly = true)
+    private MavenProject project;
+
+    @Component
     private BuildContext buildContext;
 
     //-----------------------------------------------------------------------
@@ -159,7 +135,7 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if (_skip) {
+        if (skip) {
             return;
         }
         if (getSourceDir().length() == 0) {
@@ -421,10 +397,9 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @return the classpath, not null
      * @throws MojoExecutionException
      */
-    @SuppressWarnings("unchecked")
     private List<String> obtainClasspath() throws MojoExecutionException {
         try {
-            return _project.getCompileClasspathElements();
+            return project.getCompileClasspathElements();
         } catch (DependencyResolutionRequiredException ex) {
             throw new MojoExecutionException("Error obtaining dependencies", ex);
         }

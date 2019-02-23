@@ -19,14 +19,19 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * Maven plugin for generating Joda-Beans.
- * 
- * @goal generate
- * @phase process-sources
- * @requiresDependencyResolution compile
  */
+@Mojo(name = "generate",
+        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        threadSafe = true)
+@Execute(goal = "generate", phase = LifecyclePhase.PROCESS_SOURCES)
 public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
 
     //-----------------------------------------------------------------------
