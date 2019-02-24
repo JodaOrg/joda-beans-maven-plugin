@@ -16,7 +16,6 @@
 package org.joda.beans.maven;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -42,7 +41,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 /**
  * Abstract Joda-Beans Mojo.
  */
-public class AbstractJodaBeansMojo extends AbstractMojo {
+public abstract class AbstractJodaBeansMojo extends AbstractMojo {
 
     /**
      * Key for clearing messages.
@@ -135,22 +134,29 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if (skip) {
-            return;
-        }
-        if (getSourceDir().length() == 0) {
-            throw new MojoExecutionException("Source directory must be specified");
-        }
-        ClassLoader classLoader = obtainClassLoader();
-        Class<?> toolClass = null;
+        long start = System.nanoTime();
         try {
-            toolClass = classLoader.loadClass("org.joda.beans.gen.BeanCodeGen");
-        } catch (Exception ex) {
-            getLog().info("Skipping as joda-beans is not in the project compile classpath");
-            return;
+            if (skip) {
+                return;
+            }
+            if (getSourceDir().length() == 0) {
+                throw new MojoExecutionException("Source directory must be specified");
+            }
+            ClassLoader classLoader = obtainClassLoader();
+            Class<?> toolClass = null;
+            try {
+                toolClass = classLoader.loadClass("org.joda.beans.gen.BeanCodeGen");
+            } catch (Exception ex) {
+                logInfo("Skipping as joda-beans is not in the project compile classpath");
+                return;
+            }
+    
+            List<String> argsList = buildArgs();
+            runTool(toolClass, argsList, buildContext);
+        } finally {
+            long end = System.nanoTime();
+            logDebug("Took: " + ((end - start) / 1000000L) + "ms");
         }
-        List<String> argsList = buildArgs();
-        runTool(toolClass, argsList);
     }
 
     /**
@@ -181,66 +187,40 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * 
      * @param toolClass  the tool class, not null
      * @param argsList  the argument flags, not null
+     * @param sourceFilesChanged  whether the source files have changed
+     * @param testFilesChanged  whether the test files have changed
      * @return the number of changes
      * @throws MojoExecutionException if an error occurs
      * @throws MojoFailureException if a failure occurs
      */
-    protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        // cleanup from last run
+    abstract void runTool(Class<?> toolClass, List<String> argsList, BuildContext buildContext) throws MojoExecutionException, MojoFailureException;
+
+    // remove any error markers leftover from the last run
+    void cleanupLastRun() {
         File errorFile = (File) buildContext.getValue(JODA_BEANS_MESSAGE_FILE);
         if (errorFile != null) {
             buildContext.removeMessages(errorFile);
         }
-        // invoke main source
-        argsList.add(getSourceDir());
-        int changedFileCount = runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
-        // optionally invoke test source
-        if (getTestSourceDir().length() > 0) {
-            argsList.set(argsList.size() - 1, getTestSourceDir());
-            changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getTestSourceDir()), new File(getTestClassesDir()));
-        }
-        return changedFileCount;
     }
 
-    private int runToolHandleChanges(Class<?> toolClass, List<String> argsList, File baseDir, File classesDir)
+    // actually run the tool using the specified args
+    int runToolHandleChanges(Class<?> toolClass, List<String> argsList, File baseDir, File classesDir)
             throws MojoExecutionException, MojoFailureException {
         try {
-            String baseStr = baseDir.getCanonicalPath();
             List<File> changedFiles = invoke(toolClass, argsList);
             // mark each file as being in need of a refresh
             if (changedFiles.size() > 0) {
                 if (changedFiles.get(0) == null) {
+                    logDebug("Refreshed: " + baseDir);
                     buildContext.refresh(baseDir);
                 } else {
                     for (File file : changedFiles) {
-                        getLog().debug("Refreshed: " + file);
+                        logDebug("Refreshed: " + file);
                         buildContext.refresh(file);
-                        // when running in Eclipse (determined by the eclipse flag) apply a hack
-                        // the hack deleted the class file associated with the java file
-                        // this triggers Eclipse to recompile the edited source file
-                        // this provides an Eclipse plugin for Joda-Beans just via m2e mechanisms
-                        if (eclipse) {
-                            String fileStr = file.getCanonicalPath();
-                            if (fileStr.length() > baseStr.length() && fileStr.startsWith(baseStr)) {
-                                String relative = fileStr.substring(baseStr.length());
-                                if (relative.startsWith("/") || relative.startsWith("\\")) {
-                                    relative = relative.substring(1);
-                                }
-                                relative = relative.replace(".java", ".class");
-                                File classFile = new File(classesDir, relative);
-                                if (classFile.delete()) {
-                                    getLog().debug("Deleted: " + classFile);
-                                } else {
-                                    getLog().debug("Failed to delete: " + classFile);
-                                }
-                            }
-                        }
                     }
                 }
             }
             return changedFiles.size();
-        } catch (IOException ex) {
-            throw new MojoExecutionException("IO problem", ex);
         } catch (MojoFailureException ex) {
             if (eclipse && buildContext.getValue(JODA_BEANS_MESSAGE_FILE) != null) {
                 return 0;  // avoid showing error in Eclipse pom that is reported in a file
@@ -251,14 +231,20 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
     }
 
     private List<File> invoke(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        Method createFromArgsMethod = findCreateFromArgsMethod(toolClass);
-        Method processMethod = findProcessMethod(toolClass);
-        Object beanCodeGen = createBuilder(argsList, createFromArgsMethod);
-        if (processMethod.getReturnType() == Integer.TYPE) {
-            int count = invokeBuilderCountChanges(processMethod, beanCodeGen);
-            return Collections.nCopies(count, null);
-        } else {
-            return invokeBuilderListChanges(processMethod, beanCodeGen);
+        long start = System.nanoTime();
+        try {
+            Method createFromArgsMethod = findCreateFromArgsMethod(toolClass);
+            Method processMethod = findProcessMethod(toolClass);
+            Object beanCodeGen = createBuilder(argsList, createFromArgsMethod);
+            if (processMethod.getReturnType() == Integer.TYPE) {
+                int count = invokeBuilderCountChanges(processMethod, beanCodeGen);
+                return Collections.nCopies(count, null);
+            } else {
+                return invokeBuilderListChanges(processMethod, beanCodeGen);
+            }
+        } finally {
+            long end = System.nanoTime();
+            logDebug("Invoke: " + ((end - start) / 1000000L) + "ms");
         }
     }
 
@@ -276,11 +262,11 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         Method processMethod = null;
         try {
             processMethod = toolClass.getMethod("processFiles");
-            getLog().debug("Using Joda-Beans v1.5 or later - processFiles()");
+            logDebug("Using Joda-Beans v1.5 or later - processFiles()");
         } catch (Exception ex) {
             try {
                 processMethod = toolClass.getMethod("process");
-                getLog().debug("Using Joda-Beans v1.4 or earlier - process()");
+                logDebug("Using Joda-Beans v1.4 or earlier - process()");
             } catch (Exception ex2) {
                 throw new MojoExecutionException("Unable to find method BeanCodeGen.processFiles() or BeanCodeGen.process()");
             }
@@ -373,14 +359,14 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
      * @return the classloader, not null
      */
     private URLClassLoader obtainClassLoader() throws MojoExecutionException {
-        getLog().debug("Finding joda-beans in classpath");
+        logDebug("Finding joda-beans in classpath");
         List<String> compileClasspath = obtainClasspath();
         Set<URL> classpathUrlSet = new HashSet<URL>();
         for (String classpathEntry : compileClasspath) {
             File f = new File(classpathEntry);
             if (f.exists() && f.getPath().contains("joda")) {
                 try {
-                    getLog().debug("Found classpath: " + f);
+                    logDebug("Found classpath: " + f);
                     classpathUrlSet.add(f.toURI().toURL());
                 } catch (MalformedURLException ex) {
                     throw new RuntimeException("Error interpreting classpath entry as URL: " + classpathEntry, ex);
@@ -403,6 +389,34 @@ public class AbstractJodaBeansMojo extends AbstractMojo {
         } catch (DependencyResolutionRequiredException ex) {
             throw new MojoExecutionException("Error obtaining dependencies", ex);
         }
+    }
+
+    // log to info
+    void logInfo(String msg) throws MojoExecutionException {
+        getLog().info(msg);
+        localLog(msg);
+    }
+
+    // log to debug
+    void logDebug(String msg) throws MojoExecutionException {
+        getLog().debug(msg);
+        localLog(msg);
+    }
+
+    // used for debugging plugin within M2E
+    private void localLog(String msg) throws MojoExecutionException {
+//        Path path = Paths.get("/dev/a.txt");
+//        try {
+//            BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+//            Date now = new Date();
+//            out.write(now + " " + now.getTime() % 1000 + " ");
+//            out.write(msg);
+//            out.newLine();
+//            out.flush();
+//            out.close();
+//        } catch (IOException ex ) {
+//            throw new MojoExecutionException("Died", ex);
+//        }
     }
 
 }
