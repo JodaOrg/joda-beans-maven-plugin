@@ -182,17 +182,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         return argsList;
     }
 
-    /**
-     * Runs the tool.
-     * 
-     * @param toolClass  the tool class, not null
-     * @param argsList  the argument flags, not null
-     * @param sourceFilesChanged  whether the source files have changed
-     * @param testFilesChanged  whether the test files have changed
-     * @return the number of changes
-     * @throws MojoExecutionException if an error occurs
-     * @throws MojoFailureException if a failure occurs
-     */
+    // runs the tool
     abstract void runTool(Class<?> toolClass, List<String> argsList, BuildContext buildContext) throws MojoExecutionException, MojoFailureException;
 
     // remove any error markers leftover from the last run
@@ -230,6 +220,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
     }
 
+    // invokes the generator by reflection
     private List<File> invoke(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
         try {
@@ -248,6 +239,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
     }
 
+    // finds the method to call by reflection
     private Method findCreateFromArgsMethod(Class<?> toolClass) throws MojoExecutionException {
         Method createFromArgsMethod = null;
         try {
@@ -258,6 +250,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         return createFromArgsMethod;
     }
 
+    // finds the method to call by reflection
     private Method findProcessMethod(Class<?> toolClass) throws MojoExecutionException {
         Method processMethod = null;
         try {
@@ -274,6 +267,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         return processMethod;
     }
 
+    // creates the generator by reflection
     private Object createBuilder(List<String> argsList, Method createFromArgsMethod) throws MojoExecutionException, MojoFailureException {
         String[] args = argsList.toArray(new String[argsList.size()]);
         try {
@@ -287,6 +281,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
     }
 
+    // invokes the builder
     private int invokeBuilderCountChanges(Method processMethod, Object beanCodeGen) throws MojoExecutionException, MojoFailureException {
         try {
             return (Integer) processMethod.invoke(beanCodeGen);
@@ -299,6 +294,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
     }
 
+    // invokes the builder
     @SuppressWarnings("unchecked")
     private List<File> invokeBuilderListChanges(Method processMethod, Object beanCodeGen) throws MojoExecutionException, MojoFailureException {
         try {
@@ -312,6 +308,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
     }
 
+    // handles failure in reflection
     private MojoFailureException handleFailure(InvocationTargetException ex) throws MojoFailureException {
         String msg = ex.getCause().getMessage();
         File file = new File(getSourceDir());
@@ -353,11 +350,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         return new MojoFailureException("Error while running Joda-Beans tool: " + msg, ex.getCause());
     }
 
-    /**
-     * Obtains the classloader from a set of file paths.
-     * 
-     * @return the classloader, not null
-     */
+    // obtains the classloader from a set of file paths
     private URLClassLoader obtainClassLoader() throws MojoExecutionException {
         logDebug("Finding joda-beans in classpath");
         List<String> compileClasspath = obtainClasspath();
@@ -377,12 +370,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         return new URLClassLoader(classpathUrls, AbstractJodaBeansMojo.class.getClassLoader());
     }
 
-    /**
-     * Obtains the resolved classpath of dependencies.
-     * 
-     * @return the classpath, not null
-     * @throws MojoExecutionException
-     */
+    // obtains the resolved classpath of dependencies
     private List<String> obtainClasspath() throws MojoExecutionException {
         try {
             return project.getCompileClasspathElements();
