@@ -37,6 +37,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 @Execute(goal = "generate", phase = LifecyclePhase.PROCESS_SOURCES)
 public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
 
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
     //-----------------------------------------------------------------------
     @Override
     protected void runTool(
@@ -46,19 +48,10 @@ public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
 
         // only match java files that have changed according to the build context
         // this avoids processing when there is nothing to do
-        Scanner scanner = buildContext.newScanner(new File(getSourceDir()));
-        scanner.setIncludes(new String[] {"**/*.java"});
-        scanner.scan();
-        String[] changedSourceFiles = scanner.getIncludedFiles();
-        int sourceFilesChanged = changedSourceFiles == null ? 0 : changedSourceFiles.length;
-        int testFilesChanged = 0;
-        if (getTestSourceDir().length() > 0) {
-            Scanner testFilesScanner = buildContext.newScanner(new File(getTestSourceDir()));
-            testFilesScanner.setIncludes(new String[] {"**/*.java"});
-            testFilesScanner.scan();
-            String[] changedTestFiles = testFilesScanner.getIncludedFiles();
-            testFilesChanged = changedTestFiles == null ? 0 : changedTestFiles.length;
-        }
+        String[] changedSourceFiles = findFiles(buildContext, getSourceDir());
+        String[] changedTestFiles = findFiles(buildContext, getTestSourceDir());
+        int sourceFilesChanged = changedSourceFiles.length;
+        int testFilesChanged = changedTestFiles.length;
 
         // if nothing to do then exit
         if (sourceFilesChanged == 0 && testFilesChanged == 0) {
@@ -68,7 +61,7 @@ public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
         logDebug("Files changed: main=" + sourceFilesChanged + ", test=" + testFilesChanged);
 
         logInfo("Joda-Bean generator started, directory: " + getSourceDir() +
-                        (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
+                (getTestSourceDir().length() == 0 ? "" : ", test directory: " + getTestSourceDir()));
 
         // invoke main source
         int changedFileCount = 0;
@@ -85,9 +78,9 @@ public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
             }
         }
         // optionally invoke test source
-        if (testFilesChanged > 0 && getTestSourceDir().length() > 0) {
-            if (sourceFilesChanged == 1) {
-                File file = new File(getSourceDir(), changedSourceFiles[0]);
+        if (testFilesChanged > 0) {
+            if (testFilesChanged == 1) {
+                File file = new File(getSourceDir(), changedTestFiles[0]);
                 argsList.set(argsList.size() - 1, file.toString());
                 logDebug("Single test file: " + argsList.get(argsList.size() - 1));
                 changedFileCount += runToolHandleChanges(toolClass, argsList, file.getParentFile(), new File(getTestClassesDir()));
@@ -99,6 +92,19 @@ public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
         }
 
         logInfo("Joda-Bean generator completed, " + changedFileCount + " changed files");
+    }
+
+    // find Java files
+    private String[] findFiles(BuildContext buildContext, String dirStr) {
+        File dir = new File(dirStr);
+        if (dirStr.isEmpty() || !dir.exists()) {
+            return EMPTY_STRING_ARRAY;
+        }
+        Scanner scanner = buildContext.newScanner(dir);
+        scanner.setIncludes(new String[] {"**/*.java"});
+        scanner.scan();
+        String[] changedSourceFiles = scanner.getIncludedFiles();
+        return changedSourceFiles;
     }
 
 }
