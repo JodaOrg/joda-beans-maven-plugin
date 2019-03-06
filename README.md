@@ -160,7 +160,7 @@ To get an even better integration, use Joda-Beans v1.5 or later and add the foll
               <execution>
                 <phase>generate-sources</phase>
                 <goals>
-                  <goal>generate</goal>
+                  <goal>generate-no-resolve</goal>
                 </goals>
                 <configuration>
                   <eclipse>true</eclipse>
@@ -175,10 +175,11 @@ To get an even better integration, use Joda-Beans v1.5 or later and add the foll
 ```
 
 This profile only activates when running in Eclipse IDE.
-It causes the `generate` goal to be executed using the special "eclipse=true" mode.
+It causes the `generate-no-resolve` goal to be executed using the special "eclipse=true" mode.
 This mode means that when a bean is edited, the Joda-Beans source generator is triggered,
 and the file recompiled. Note that the processing in Eclipse takes a few seconds to refresh properly.
-This has been tested with Eclipse Luna, Mars and Neon.
+
+(`generate-no-resolve` is a special mode from v1.2.0 that avoids resolving the classpath, which can give Eclipse problems)
 
 
 #### Joda-Beans version
