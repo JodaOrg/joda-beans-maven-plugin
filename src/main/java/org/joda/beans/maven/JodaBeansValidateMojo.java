@@ -15,23 +15,29 @@
  */
 package org.joda.beans.maven;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Maven plugin for validating that the generated Joda-Beans are up to date.
- * 
- * @goal validate
- * @phase process-sources
- * @requiresDependencyResolution compile
  */
+@Mojo(name = "validate",
+        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        threadSafe = true)
+@Execute(goal = "validate", phase = LifecyclePhase.PROCESS_SOURCES)
 public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
 
-    /**
-     * @parameter alias="stopOnError" property="joda.beans.stopOnError"
-     */
+    @Parameter(alias = "stopOnError", property = "joda.beans.stopOnError", defaultValue = "true")
     private boolean stopOnError = true;
 
     //-----------------------------------------------------------------------
@@ -43,19 +49,35 @@ public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
     }
 
     @Override
-    protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        getLog().info("Joda-Bean validator started, directory: " + getSourceDir() +
+    protected void runTool(
+            Class<?> toolClass,
+            List<String> argsList,
+            BuildContext buildContext) throws MojoExecutionException, MojoFailureException {
+
+        logInfo("Joda-Bean validator started, directory: " + getSourceDir() +
                         (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
-        int changes = super.runTool(toolClass, argsList);
+        int changes = runTool(toolClass, argsList);
         if (changes > 0) {
             if (stopOnError) {
                 throw new MojoFailureException("Some Joda-Beans need to be re-generated (" + changes + " files)");
             }
-            getLog().info("*** Joda-Bean validator found " + changes + " beans in need of generation ***");
+            logInfo("*** Joda-Bean validator found " + changes + " beans in need of generation ***");
         } else {
-            getLog().info("Joda-Bean validator completed");
+            logInfo("Joda-Bean validator completed");
         }
-        return changes;
+    }
+
+    private int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
+        // invoke main source
+        argsList.add(getSourceDir());
+        int changedFileCount = 0;
+        changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
+        // optionally invoke test source
+        if (getTestSourceDir().length() > 0) {
+            argsList.set(argsList.size() - 1, getTestSourceDir());
+            changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getTestSourceDir()), new File(getTestClassesDir()));
+        }
+        return changedFileCount;
     }
 
 }

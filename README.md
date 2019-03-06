@@ -18,7 +18,7 @@ This goal has the following optional configuration items:
 - `indent` - as per the command line, the amount of indentation used,
 either the word "tab", or a number, such as "2" or "4". Default is "4". Property is `${joda.beans.indent}`.
 - `prefix` - as per the command line, the prefix used by fields. Default is "". Property is `${joda.beans.prefix}`.
-- `config` - as per the command line, the config to use, "jdk6" pr "guava". Default is "guava". Property is `${joda.beans.config}`.
+- `config` - as per the command line, the config to use, "jdk" or "guava". Default is "guava". Property is `${joda.beans.config}`.
 - `verbose` - as per the command line, a number from "0" (quiet) to "3" (verbose). Property is `${joda.beans.verbose}`.
 - `stopOnError` - whether the build should continue when an error is found. Default is "true". Property is `${joda.beans.stopOnError}`.
 - `skip` - skips the plugin
@@ -160,7 +160,7 @@ To get an even better integration, use Joda-Beans v1.5 or later and add the foll
               <execution>
                 <phase>generate-sources</phase>
                 <goals>
-                  <goal>generate</goal>
+                  <goal>generate-no-resolve</goal>
                 </goals>
                 <configuration>
                   <eclipse>true</eclipse>
@@ -175,10 +175,11 @@ To get an even better integration, use Joda-Beans v1.5 or later and add the foll
 ```
 
 This profile only activates when running in Eclipse IDE.
-It causes the `generate` goal to be executed using the special "eclipse=true" mode.
+It causes the `generate-no-resolve` goal to be executed using the special "eclipse=true" mode.
 This mode means that when a bean is edited, the Joda-Beans source generator is triggered,
 and the file recompiled. Note that the processing in Eclipse takes a few seconds to refresh properly.
-This has been tested with Eclipse Luna, Mars and Neon.
+
+(`generate-no-resolve` is a special mode from v1.2.0 that avoids resolving the classpath, which can give Eclipse problems)
 
 
 #### Joda-Beans version

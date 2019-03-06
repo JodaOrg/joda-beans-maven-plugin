@@ -15,28 +15,19 @@
  */
 package org.joda.beans.maven;
 
-import java.util.List;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * Maven plugin for generating Joda-Beans.
- * 
- * @goal generate
- * @phase process-sources
- * @requiresDependencyResolution compile
  */
-public class JodaBeansGenerateMojo extends AbstractJodaBeansMojo {
-
-    //-----------------------------------------------------------------------
-    @Override
-    protected int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
-        getLog().info("Joda-Bean generator started, directory: " + getSourceDir() +
-                        (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
-        int changes = super.runTool(toolClass, argsList);
-        getLog().info("Joda-Bean generator completed, " + changes + " changed files");
-        return changes;
-    }
+@Mojo(name = "generate",
+        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        threadSafe = true)
+@Execute(goal = "generate", phase = LifecyclePhase.PROCESS_SOURCES)
+public class JodaBeansGenerateMojo extends AbstractJodaBeansGenerateMojo {
 
 }
