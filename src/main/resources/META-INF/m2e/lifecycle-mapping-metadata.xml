@@ -17,6 +17,19 @@
     <pluginExecution>
       <pluginExecutionFilter>
         <goals>
+          <goal>generate-no-resolve</goal>
+        </goals>
+      </pluginExecutionFilter>
+      <action>
+        <execute>
+          <runOnIncremental>true</runOnIncremental>
+          <runOnConfiguration>false</runOnConfiguration>
+        </execute>
+      </action>
+    </pluginExecution>
+    <pluginExecution>
+      <pluginExecutionFilter>
+        <goals>
           <goal>validate</goal>
         </goals>
       </pluginExecutionFilter>

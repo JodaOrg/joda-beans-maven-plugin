@@ -351,7 +351,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     }
 
     // obtains the classloader from a set of file paths
-    private URLClassLoader obtainClassLoader() throws MojoExecutionException {
+    ClassLoader obtainClassLoader() throws MojoExecutionException {
         logDebug("Finding joda-beans in classpath");
         List<String> compileClasspath = obtainClasspath();
         Set<URL> classpathUrlSet = new HashSet<URL>();
