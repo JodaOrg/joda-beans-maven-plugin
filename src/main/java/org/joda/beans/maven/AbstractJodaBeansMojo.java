@@ -165,7 +165,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
      * @return the arguments, not null
      */
     protected List<String> buildArgs() {
-        List<String> argsList = new ArrayList<String>();
+        List<String> argsList = new ArrayList<>();
         argsList.add("-R");
         if (indent != null) {
             argsList.add("-indent=" + indent);
@@ -354,7 +354,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     ClassLoader obtainClassLoader() throws MojoExecutionException {
         logDebug("Finding joda-beans in classpath");
         List<String> compileClasspath = obtainClasspath();
-        Set<URL> classpathUrlSet = new HashSet<URL>();
+        Set<URL> classpathUrlSet = new HashSet<>();
         for (String classpathEntry : compileClasspath) {
             File f = new File(classpathEntry);
             if (f.exists() && f.getPath().contains("joda")) {

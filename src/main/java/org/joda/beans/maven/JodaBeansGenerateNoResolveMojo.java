@@ -70,7 +70,7 @@ public class JodaBeansGenerateNoResolveMojo extends AbstractJodaBeansGenerateMoj
         if (!result.isSuccess()) {
             throw new MojoExecutionException("Unable to resolve org.joda:joda-beans:" + jodaBeansVersion);
         }
-        List<URL> classpath = new ArrayList<URL>();
+        List<URL> classpath = new ArrayList<>();
         for (Artifact artifact : result.getArtifacts()) {
             File file = new File(localRepo.getBasedir(), localRepo.pathOf(artifact));
             try {

@@ -59,7 +59,7 @@ One way to achieve this is using `<pluginManagement>`:
         <plugin>
           <groupId>org.joda</groupId>
           <artifactId>joda-beans-maven-plugin</artifactId>
-          <version>1.1</version>
+          <version>1.2.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -98,7 +98,7 @@ If they are not, the user would be expected to run `mvn joda-beans:generate` fro
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>joda-beans-maven-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.2.0</version>
         <executions>
           <execution>
             <id>joda-beans-validate</id>
@@ -120,7 +120,7 @@ To generate the sources as part of the build, rather than validating them, use t
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>joda-beans-maven-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.2.0</version>
         <executions>
           <execution>
             <id>joda-beans-generate</id>
@@ -187,3 +187,12 @@ and the file recompiled. Note that the processing in Eclipse takes a few seconds
 Version 0.7.3 and beyond of the plugin generates code using the Joda-Beans version in the project classpath.
 If the project does not have the dependency available then generation is skipped.
 
+Version 1.2.0 and beyond offers a goal `generate-no-resolve` that reads the property `joda.beans.version`
+and resolves the dependency in the local repository. The version is defaulted to v2.5.0 of Joda-Beans.
+
+
+### Release process
+
+* Update version (README.md, not pom.xml)
+* Commit and push
+* `mvn clean release:clean release:prepare release:perform`
