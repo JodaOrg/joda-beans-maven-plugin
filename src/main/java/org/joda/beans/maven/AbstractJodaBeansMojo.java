@@ -16,6 +16,7 @@
 package org.joda.beans.maven;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -24,6 +25,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -197,20 +199,48 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     int runToolHandleChanges(Class<?> toolClass, List<String> argsList, File baseDir, File classesDir)
             throws MojoExecutionException, MojoFailureException {
         try {
+            String baseStr = baseDir.getCanonicalPath();
             List<File> changedFiles = invoke(toolClass, argsList);
+            Set<String> filesToRefresh = new LinkedHashSet<>();
             // mark each file as being in need of a refresh
             if (changedFiles.size() > 0) {
                 if (changedFiles.get(0) == null) {
-                    logDebug("Refreshed: " + baseDir);
-                    buildContext.refresh(baseDir);
+                    filesToRefresh.add(baseDir.toString());
                 } else {
                     for (File file : changedFiles) {
-                        logDebug("Refreshed: " + file);
-                        buildContext.refresh(file);
+                        filesToRefresh.add(file.toString());
+                        // when running in Eclipse (determined by the eclipse flag) apply a hack
+                        // the hack deleted the class file associated with the java file
+                        // this triggers Eclipse to recompile the edited source file
+                        // this provides an Eclipse plugin for Joda-Beans just via m2e mechanisms
+                        if (eclipse) {
+                            String fileStr = file.getCanonicalPath();
+                            if (fileStr.length() > baseStr.length() && fileStr.startsWith(baseStr)) {
+                                String relative = fileStr.substring(baseStr.length());
+                                if (relative.startsWith("/") || relative.startsWith("\\")) {
+                                    relative = relative.substring(1);
+                                }
+                                relative = relative.replace(".java", ".class");
+                                File classFile = new File(classesDir, relative);
+                                if (classFile.delete()) {
+                                    logDebug("Deleted: " + classFile);
+                                } else {
+                                    logDebug("Failed to delete: " + classFile);
+                                }
+                                filesToRefresh.add(classFile.toString());
+                            }
+                        }
                     }
                 }
             }
+            // refresh once all other changes made
+            for (String fileStr : filesToRefresh) {
+                logDebug("Refreshed: " + fileStr);
+                buildContext.refresh(new File(fileStr));
+            }
             return changedFiles.size();
+        } catch (IOException ex) {
+            throw new MojoExecutionException("IO problem: " + ex.toString(), ex);
         } catch (MojoFailureException ex) {
             if (eclipse && buildContext.getValue(JODA_BEANS_MESSAGE_FILE) != null) {
                 return 0;  // avoid showing error in Eclipse pom that is reported in a file
@@ -395,15 +425,16 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     private void localLog(String msg) throws MojoExecutionException {
 //        Path path = Paths.get("/dev/a.txt");
 //        try {
-//            BufferedWriter out = Files.newBufferedWriter(path, StandardCharsets.UTF_8,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+//            BufferedWriter out = Files.newBufferedWriter(
+//                    path, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 //            Date now = new Date();
 //            out.write(now + " " + now.getTime() % 1000 + " ");
 //            out.write(msg);
 //            out.newLine();
 //            out.flush();
 //            out.close();
-//        } catch (IOException ex ) {
-//            throw new MojoExecutionException("Died", ex);
+//        } catch (IOException ex) {
+//            throw new MojoExecutionException("Died" + ex.toString(), ex);
 //        }
     }
 

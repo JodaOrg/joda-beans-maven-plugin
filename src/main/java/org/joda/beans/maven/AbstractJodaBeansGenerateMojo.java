@@ -57,28 +57,38 @@ public abstract class AbstractJodaBeansGenerateMojo extends AbstractJodaBeansMoj
         // invoke main source
         int changedFileCount = 0;
         if (sourceFilesChanged > 0) {
+            File sourceDir = new File(getSourceDir());
+            File classesDir = new File(getClassesDir());
+            for (String changedFile : changedSourceFiles) {
+                buildContext.removeMessages(new File(sourceDir, changedFile));
+            }
             if (sourceFilesChanged == 1) {
-                File file = new File(getSourceDir(), changedSourceFiles[0]);
+                File file = new File(sourceDir, changedSourceFiles[0]);
                 argsList.add(file.toString());
                 logDebug("Single file: " + argsList.get(argsList.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, argsList, file.getParentFile(), new File(getClassesDir()));
+                changedFileCount += runToolHandleChanges(toolClass, argsList, sourceDir, classesDir);
             } else {
                 argsList.add(getSourceDir());
                 logDebug("All files: " + argsList.get(argsList.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
+                changedFileCount += runToolHandleChanges(toolClass, argsList, sourceDir, classesDir);
             }
         }
         // optionally invoke test source
         if (testFilesChanged > 0) {
+            File sourceDir = new File(getTestSourceDir());
+            File classesDir = new File(getTestClassesDir());
+            for (String changedFile : changedTestFiles) {
+                buildContext.removeMessages(new File(sourceDir, changedFile));
+            }
             if (testFilesChanged == 1) {
-                File file = new File(getSourceDir(), changedTestFiles[0]);
+                File file = new File(sourceDir, changedTestFiles[0]);
                 argsList.set(argsList.size() - 1, file.toString());
                 logDebug("Single test file: " + argsList.get(argsList.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, argsList, file.getParentFile(), new File(getTestClassesDir()));
+                changedFileCount += runToolHandleChanges(toolClass, argsList, sourceDir, classesDir);
             } else {
                 argsList.set(argsList.size() - 1, getTestSourceDir());
                 logDebug("All test files: " + argsList.get(argsList.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getTestSourceDir()), new File(getTestClassesDir()));
+                changedFileCount += runToolHandleChanges(toolClass, argsList, sourceDir, classesDir);
             }
         }
 
