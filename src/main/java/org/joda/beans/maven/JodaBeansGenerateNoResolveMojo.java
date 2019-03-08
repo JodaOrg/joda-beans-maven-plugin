@@ -21,6 +21,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -41,7 +43,8 @@ import org.apache.maven.repository.RepositorySystem;
 @Execute(goal = "generate-no-resolve", phase = LifecyclePhase.PROCESS_SOURCES)
 public class JodaBeansGenerateNoResolveMojo extends AbstractJodaBeansGenerateMojo {
 
-    private static ClassLoader cached = null;
+    // an imperfect cache, but will handle most cases
+    private static final ConcurrentMap<String, ClassLoader> classLoaderCache = new ConcurrentHashMap<>();
 
     @Parameter(alias = "jodaBeansVersion", property = "joda.beans.version", defaultValue = "2.5.0", required = true)
     private String jodaBeansVersion;
@@ -57,6 +60,7 @@ public class JodaBeansGenerateNoResolveMojo extends AbstractJodaBeansGenerateMoj
 
     @Override
     synchronized ClassLoader obtainClassLoader() throws MojoExecutionException {
+        ClassLoader cached = classLoaderCache.get(jodaBeansVersion);
         if (cached != null) {
             return cached;
         }
@@ -83,7 +87,7 @@ public class JodaBeansGenerateNoResolveMojo extends AbstractJodaBeansGenerateMoj
         }
         URL[] classpathUrls = classpath.toArray(new URL[classpath.size()]);
         URLClassLoader classLoader = new URLClassLoader(classpathUrls, AbstractJodaBeansMojo.class.getClassLoader());
-        cached = classLoader;
+        classLoaderCache.put(jodaBeansVersion, classLoader);
         return classLoader;
     }
 
