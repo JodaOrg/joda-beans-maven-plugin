@@ -39,8 +39,8 @@ import org.apache.maven.repository.RepositorySystem;
 /**
  * Maven plugin for generating Joda-Beans without dependency resolution.
  */
-@Mojo(name = "generate-no-resolve", defaultPhase = LifecyclePhase.PROCESS_SOURCES, threadSafe = true)
-@Execute(goal = "generate-no-resolve", phase = LifecyclePhase.PROCESS_SOURCES)
+@Mojo(name = "generate-no-resolve", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
+@Execute(goal = "generate-no-resolve", phase = LifecyclePhase.GENERATE_SOURCES)
 public class JodaBeansGenerateNoResolveMojo extends AbstractJodaBeansGenerateMojo {
 
     // an imperfect cache, but will handle most cases

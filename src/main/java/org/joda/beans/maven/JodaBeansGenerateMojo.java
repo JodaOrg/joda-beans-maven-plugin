@@ -24,10 +24,10 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * Maven plugin for generating Joda-Beans.
  */
 @Mojo(name = "generate",
-        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         requiresDependencyResolution = ResolutionScope.COMPILE,
         threadSafe = true)
-@Execute(goal = "generate", phase = LifecyclePhase.PROCESS_SOURCES)
+@Execute(goal = "generate", phase = LifecyclePhase.GENERATE_SOURCES)
 public class JodaBeansGenerateMojo extends AbstractJodaBeansGenerateMojo {
 
 }

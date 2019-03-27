@@ -31,10 +31,10 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * Maven plugin for validating that the generated Joda-Beans are up to date.
  */
 @Mojo(name = "validate",
-        defaultPhase = LifecyclePhase.PROCESS_SOURCES,
+        defaultPhase = LifecyclePhase.GENERATE_SOURCES,
         requiresDependencyResolution = ResolutionScope.COMPILE,
         threadSafe = true)
-@Execute(goal = "validate", phase = LifecyclePhase.PROCESS_SOURCES)
+@Execute(goal = "validate", phase = LifecyclePhase.GENERATE_SOURCES)
 public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
 
     @Parameter(alias = "stopOnError", property = "joda.beans.stopOnError", defaultValue = "true")
