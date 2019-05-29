@@ -196,7 +196,7 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     }
 
     // actually run the tool using the specified args
-    int runToolHandleChanges(Class<?> toolClass, List<String> argsList, File baseDir, File classesDir)
+    List<File> runToolHandleChanges(Class<?> toolClass, List<String> argsList, File baseDir, File classesDir)
             throws MojoExecutionException, MojoFailureException {
         try {
             String baseStr = baseDir.getCanonicalPath();
@@ -238,12 +238,12 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
                 logDebug("Refreshed: " + fileStr);
                 buildContext.refresh(new File(fileStr));
             }
-            return changedFiles.size();
+            return changedFiles;
         } catch (IOException ex) {
             throw new MojoExecutionException("IO problem: " + ex.toString(), ex);
         } catch (MojoFailureException ex) {
             if (eclipse && buildContext.getValue(JODA_BEANS_MESSAGE_FILE) != null) {
-                return 0;  // avoid showing error in Eclipse pom that is reported in a file
+                return Collections.emptyList();  // avoid showing error in Eclipse pom that is reported in a file
             } else {
                 throw ex;
             }

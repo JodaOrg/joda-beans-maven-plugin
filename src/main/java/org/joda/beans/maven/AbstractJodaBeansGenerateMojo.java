@@ -68,11 +68,11 @@ public abstract class AbstractJodaBeansGenerateMojo extends AbstractJodaBeansMoj
                 File file = new File(sourceDir, changedSourceFiles[0]);
                 args.add(file.toString());
                 logDebug("Single file: " + args.get(args.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir);
+                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir).size();
             } else {
                 args.add(getSourceDir());
                 logDebug("All files: " + args.get(args.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir);
+                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir).size();
             }
         }
         // optionally invoke test source
@@ -87,11 +87,11 @@ public abstract class AbstractJodaBeansGenerateMojo extends AbstractJodaBeansMoj
                 File file = new File(sourceDir, changedTestFiles[0]);
                 args.add(file.toString());
                 logDebug("Single test file: " + args.get(args.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir);
+                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir).size();
             } else {
                 args.add(getTestSourceDir());
                 logDebug("All test files: " + args.get(args.size() - 1));
-                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir);
+                changedFileCount += runToolHandleChanges(toolClass, args, sourceDir, classesDir).size();
             }
         }
 
