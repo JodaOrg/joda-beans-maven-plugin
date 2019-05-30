@@ -16,9 +16,9 @@
 package org.joda.beans.maven;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Execute;
@@ -72,7 +72,7 @@ public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
     private List<File> runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
         // invoke main source
         argsList.add(getSourceDir());
-        List<File> changedFiles = Lists.newLinkedList();
+        List<File> changedFiles = new ArrayList<>();
 
         List<File> productionFilesChanged = runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
         changedFiles.addAll(productionFilesChanged);
