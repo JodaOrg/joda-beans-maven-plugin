@@ -46,7 +46,7 @@ public class JodaBeansGenerateNoResolveMojo extends AbstractJodaBeansGenerateMoj
     // an imperfect cache, but will handle most cases
     private static final ConcurrentMap<String, ClassLoader> classLoaderCache = new ConcurrentHashMap<>();
 
-    @Parameter(alias = "jodaBeansVersion", property = "joda.beans.version", defaultValue = "2.5.0", required = true)
+    @Parameter(alias = "jodaBeansVersion", property = "joda.beans.version", defaultValue = "2.7.0", required = true)
     private String jodaBeansVersion;
 
     @Component

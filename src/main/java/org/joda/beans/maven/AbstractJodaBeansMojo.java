@@ -67,6 +67,9 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     @Parameter(alias = "config", property = "joda.beans.config")
     private String config;
 
+    @Parameter(alias = "generatedAnnotation", property = "joda.beans.generatedAnnotation", defaultValue = "false")
+    private boolean generatedAnnotation;
+
     @Parameter(alias = "verbose", property = "joda.beans.verbose")
     private Integer verbose;
 
@@ -177,6 +180,9 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
         if (config != null) {
             argsList.add("-config=" + config);
+        }
+        if (generatedAnnotation) {
+            argsList.add("-generated");
         }
         if (verbose != null) {
             argsList.add("-verbose=" + verbose);

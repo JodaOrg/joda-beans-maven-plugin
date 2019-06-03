@@ -19,6 +19,7 @@ This goal has the following optional configuration items:
 either the word "tab", or a number, such as "2" or "4". Default is "4". Property is `${joda.beans.indent}`.
 - `prefix` - as per the command line, the prefix used by fields. Default is "". Property is `${joda.beans.prefix}`.
 - `config` - as per the command line, the config to use, "jdk" or "guava". Default is "guava". Property is `${joda.beans.config}`.
+- `generatedAnnotation` - set to "true" to add `@Generated` annotations. Property is `${joda.beans.generatedAnnotation}`.
 - `verbose` - as per the command line, a number from "0" (quiet) to "3" (verbose). Property is `${joda.beans.verbose}`.
 - `stopOnError` - whether the build should continue when an error is found. Default is "true". Property is `${joda.beans.stopOnError}`.
 - `skip` - skips the plugin
@@ -36,6 +37,7 @@ This goal has the following optional configuration items:
 either the word "tab", or a number, such as "2" or "4". Default is "4". Property is `${joda.beans.indent}`.
 - `prefix` - as per the command line, the prefix used by fields. Default is "". Property is `${joda.beans.prefix}`.
 - `config` - as per the command line, the config to use, "jdk6" pr "guava". Default is "guava". Property is `${joda.beans.config}`.
+- `generatedAnnotation` - set to "true" to add `@Generated` annotations. Property is `${joda.beans.generatedAnnotation}`.
 - `verbose` - as per the command line, a number from "0" (quiet) to "3" (verbose). Property is `${joda.beans.verbose}`.
 - `skip` - skips the plugin
 
@@ -189,6 +191,9 @@ If the project does not have the dependency available then generation is skipped
 
 Version 1.2.0 and beyond offers a goal `generate-no-resolve` that reads the property `joda.beans.version`
 and resolves the dependency in the local repository. The version is defaulted to v2.5.0 of Joda-Beans.
+
+Version 1.3.0 and beyond supports the property `joda.beans.generatedAnnotation`.
+The Joda-Beans version is defaulted to v2.7.0 of Joda-Beans.
 
 
 ### Release process
