@@ -16,6 +16,9 @@
 package org.joda.beans.maven;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,12 +58,16 @@ public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
             List<String> argsList,
             BuildContext buildContext) throws MojoExecutionException, MojoFailureException {
 
+        Path sourceDirPath = Paths.get(getSourceDir());
         logInfo("Joda-Bean validator started, directory: " + getSourceDir() +
                         (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
         List<File> changedFiles = runTool(toolClass, argsList);
         if (changedFiles.size() > 0) {
             if (stopOnError) {
-                changedFiles.forEach(file -> getLog().warn("Joda-Bean needs to be re-generated: " + file));
+                for (File file : changedFiles) {
+                    getLog().warn("Joda-Bean needs to be re-generated: " + sourceDirPath.relativize(canonicalize(file).toPath()));
+                }
+
                 throw new MojoFailureException("Some Joda-Beans need to be re-generated (" + changedFiles.size() + " files)");
             }
             logInfo("*** Joda-Bean validator found " + changedFiles.size() + " beans in need of generation ***");
@@ -86,4 +93,11 @@ public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
         return changedFiles;
     }
 
+    private static File canonicalize(File file) throws MojoExecutionException {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException ex) {
+            throw new MojoExecutionException("Failed to canonicalize file: " + file, ex);
+        }
+    }
 }
