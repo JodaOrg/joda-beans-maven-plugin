@@ -33,6 +33,12 @@
       <url>https://github.com/jodastephen</url>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Ashley Heath</name>
+      <url>https://github.com/ashleyheath</url>
+    </contributor>
+  </contributors>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
