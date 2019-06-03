@@ -16,6 +16,10 @@
 package org.joda.beans.maven;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -54,30 +58,46 @@ public class JodaBeansValidateMojo extends AbstractJodaBeansMojo {
             List<String> argsList,
             BuildContext buildContext) throws MojoExecutionException, MojoFailureException {
 
+        Path sourceDirPath = Paths.get(getSourceDir());
         logInfo("Joda-Bean validator started, directory: " + getSourceDir() +
                         (getTestSourceDir().length() == 0 ? "" : ", test directory:" + getTestSourceDir()));
-        int changes = runTool(toolClass, argsList);
-        if (changes > 0) {
+        List<File> changedFiles = runTool(toolClass, argsList);
+        if (changedFiles.size() > 0) {
             if (stopOnError) {
-                throw new MojoFailureException("Some Joda-Beans need to be re-generated (" + changes + " files)");
+                for (File file : changedFiles) {
+                    getLog().warn("Joda-Bean needs to be re-generated: " + sourceDirPath.relativize(canonicalize(file).toPath()));
+                }
+
+                throw new MojoFailureException("Some Joda-Beans need to be re-generated (" + changedFiles.size() + " files)");
             }
-            logInfo("*** Joda-Bean validator found " + changes + " beans in need of generation ***");
+            logInfo("*** Joda-Bean validator found " + changedFiles.size() + " beans in need of generation ***");
         } else {
             logInfo("Joda-Bean validator completed");
         }
     }
 
-    private int runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
+    private List<File> runTool(Class<?> toolClass, List<String> argsList) throws MojoExecutionException, MojoFailureException {
         // invoke main source
         argsList.add(getSourceDir());
-        int changedFileCount = 0;
-        changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
+        List<File> changedFiles = new ArrayList<>();
+
+        List<File> productionFilesChanged = runToolHandleChanges(toolClass, argsList, new File(getSourceDir()), new File(getClassesDir()));
+        changedFiles.addAll(productionFilesChanged);
+
         // optionally invoke test source
         if (getTestSourceDir().length() > 0) {
             argsList.set(argsList.size() - 1, getTestSourceDir());
-            changedFileCount += runToolHandleChanges(toolClass, argsList, new File(getTestSourceDir()), new File(getTestClassesDir()));
+            List<File> testFilesChanged = runToolHandleChanges(toolClass, argsList, new File(getTestSourceDir()), new File(getTestClassesDir()));
+            changedFiles.addAll(testFilesChanged);
         }
-        return changedFileCount;
+        return changedFiles;
     }
 
+    private static File canonicalize(File file) throws MojoExecutionException {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException ex) {
+            throw new MojoExecutionException("Failed to canonicalize file: " + file, ex);
+        }
+    }
 }
