@@ -61,7 +61,7 @@ One way to achieve this is using `<pluginManagement>`:
         <plugin>
           <groupId>org.joda</groupId>
           <artifactId>joda-beans-maven-plugin</artifactId>
-          <version>1.3.0</version>
+          <version>1.3.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
