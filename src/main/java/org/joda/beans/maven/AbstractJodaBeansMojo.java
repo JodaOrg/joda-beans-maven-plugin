@@ -70,6 +70,9 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     @Parameter(alias = "generatedAnnotation", property = "joda.beans.generatedAnnotation", defaultValue = "false")
     private boolean generatedAnnotation;
 
+    @Parameter(alias = "checkstyleIgnores", property = "joda.beans.checkstyleIgnores", defaultValue = "false")
+    private boolean checkstyleIgnores;
+
     @Parameter(alias = "verbose", property = "joda.beans.verbose")
     private Integer verbose;
 
@@ -186,6 +189,9 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
         if (verbose != null) {
             argsList.add("-verbose=" + verbose);
+        }
+        if (checkstyleIgnores) {
+            argsList.add("-checkstyleIgnores");
         }
         return argsList;
     }
