@@ -36,6 +36,8 @@ This goal has the following optional configuration items:
 - `indent` - as per the command line, the amount of indentation used,
 either the word "tab", or a number, such as "2" or "4". Default is "4". Property is `${joda.beans.indent}`.
 - `prefix` - as per the command line, the prefix used by fields. Default is "". Property is `${joda.beans.prefix}`.
+- `eol` - as per the command line, the line separator used to write generated files,
+either "lf", "crlf", or "cr". Default is System.lineSeparator. Property is `${joda.beans.eol}`.
 - `config` - as per the command line, the config to use, "jdk6" pr "guava". Default is "guava". Property is `${joda.beans.config}`.
 - `generatedAnnotation` - set to "true" to add `@Generated` annotations. Property is `${joda.beans.generatedAnnotation}`.
 - `verbose` - as per the command line, a number from "0" (quiet) to "3" (verbose). Property is `${joda.beans.verbose}`.
@@ -61,7 +63,7 @@ One way to achieve this is using `<pluginManagement>`:
         <plugin>
           <groupId>org.joda</groupId>
           <artifactId>joda-beans-maven-plugin</artifactId>
-          <version>1.3.1</version>
+          <version>1.3.2</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -100,7 +102,7 @@ If they are not, the user would be expected to run `mvn joda-beans:generate` fro
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>joda-beans-maven-plugin</artifactId>
-        <version>1.3.0</version>
+        <version>1.3.2</version>
         <executions>
           <execution>
             <id>joda-beans-validate</id>
@@ -122,7 +124,7 @@ To generate the sources as part of the build, rather than validating them, use t
       <plugin>
         <groupId>org.joda</groupId>
         <artifactId>joda-beans-maven-plugin</artifactId>
-        <version>1.3.0</version>
+        <version>1.3.2</version>
         <executions>
           <execution>
             <id>joda-beans-generate</id>
@@ -194,6 +196,9 @@ and resolves the dependency in the local repository. The version is defaulted to
 
 Version 1.3.0 and beyond supports the property `joda.beans.generatedAnnotation`.
 The Joda-Beans version is defaulted to v2.7.0 of Joda-Beans.
+
+Version 1.3.2 and beyond supports the property `joda.beans.eol`.
+The Joda-Beans version is defaulted to v2.8.1 of Joda-Beans.
 
 
 ### Release process
