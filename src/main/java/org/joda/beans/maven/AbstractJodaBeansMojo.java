@@ -64,6 +64,9 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
     @Parameter(alias = "prefix", property = "joda.beans.prefix")
     private String prefix;
 
+    @Parameter(alias = "eol", property = "joda.beans.eol")
+    private String eol;
+
     @Parameter(alias = "config", property = "joda.beans.config")
     private String config;
 
@@ -177,6 +180,9 @@ public abstract class AbstractJodaBeansMojo extends AbstractMojo {
         }
         if (prefix != null) {
             argsList.add("-prefix=" + prefix);
+        }
+        if (eol != null) {
+            argsList.add("-eol=" + eol);
         }
         if (config != null) {
             argsList.add("-config=" + config);
